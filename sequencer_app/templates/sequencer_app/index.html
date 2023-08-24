@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Cities App</title>
+</head>
+<body>
+    <h1>Simple Web SSH Client</h1>
+
+    <div>
+    <textarea name="textarea" style="width:500px;height:300px;"></textarea>
+    </div>
+
+    <div>
+        <label for="hostname">Host name:</label>
+        <input type="text" id="hostname" name="hostname" value="tty.sdf.org"><br><br>
+        <label for="user">User:</label>
+        <input type="text" id="user" name="user" value="jcal0"><br><br>
+        <label for="pwfield">Password:</label>
+        <input type="text" id="pwfield" name="pwfield" value="ZVTKoZ9HfPRQ"><br><br>
+    </div>
+    <button id="myConnectButton">Connect</button>
+    <button id="sendBackspace">Send backspace</button>
+    <button id="Send Enter">Send backspace</button>
+    <button id="Close">Close</button>
+
+    <ul id="myList">
+
+    </ul>
+
+
+    <script>
+        let url = `ws://${window.location.host}/ws/socket-server/`
+        const ulElement = document.getElementById('myList');
+        const chatSocket = new WebSocket(url)
+        chatSocket.onmessage = function(e){
+            let data = JSON.parse(e.data)
+            console.log('Data:', data)
+            const liElement = document.createElement('li');
+            liElement.textContent = data.listdata
+            ulElement.appendChild(liElement);
+        }
+
+        function connectFunction() {
+            const username = document.getElementById('user').value;
+            const password = document.getElementById('pwfield').value;
+
+            const eventData = {
+                event: 'connect_ssh',
+                username: username,
+                password: password
+            };
+        
+
+            chatSocket.send(JSON.stringify(eventData));
+
+            // i want to send an event here
+          }
+
+        var button = document.getElementById("myConnectButton");
+
+        button.onclick = connectFunction;
+
+    </script>
+</body>
+</html>
