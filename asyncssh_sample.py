@@ -1,5 +1,8 @@
 import asyncio, asyncssh, sys
 
+async def asyncsleep(timeout):
+    await asyncio.sleep(timeout)
+
 async def run_client(host, username, password):
     async with asyncssh.connect(host, username=username, password=password) as conn:
         writer, reader, errout = await conn.open_session()
@@ -7,12 +10,15 @@ async def run_client(host, username, password):
         print(x)
         backspace = '\x08'
         writer.write(backspace)
+        await asyncsleep(1)
         result = await asyncio.wait_for(reader.read(4096), timeout=3)
         print(result)
         enter = '\n'
         writer.write(enter)
         writer.write(enter)
+        await asyncsleep(1)
         result = await asyncio.wait_for(reader.read(4096), timeout=3)
+        await asyncsleep(1)
         print(result)
         # writer.write(backspace)
         # result = await asyncio.wait_for(reader.readexactly(4096), timeout=3)

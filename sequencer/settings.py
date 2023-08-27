@@ -25,12 +25,15 @@ SECRET_KEY = 'django-insecure-)uo48av26-j&*6-7#qd)u+!gx3azxzgqlenf1d+mvf#j!7#b-o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+DEBUGGER_ENABLE = True
+
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'django_debugger',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,6 +44,8 @@ INSTALLED_APPS = [
     'sequencer_app',
 
 ]
+
+
 
 ASGI_APPLICATION = 'sequencer.asgi.application'
 
