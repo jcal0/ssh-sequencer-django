@@ -25,12 +25,16 @@ SECRET_KEY = 'django-insecure-)uo48av26-j&*6-7#qd)u+!gx3azxzgqlenf1d+mvf#j!7#b-o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+DEBUGGER_ENABLE = True
+
+ALLOWED_HOSTS = ['.appspot.com', 'localhost', 'moldyspam.com']
+
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'django_debugger',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,6 +45,8 @@ INSTALLED_APPS = [
     'sequencer_app',
 
 ]
+
+
 
 ASGI_APPLICATION = 'sequencer.asgi.application'
 
@@ -126,3 +132,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

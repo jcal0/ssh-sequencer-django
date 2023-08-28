@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+    {% load static %}
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.2.1/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.js"></script>
     <title>Random Cities App</title>
 </head>
 <body>
     <h1>Simple Web SSH Client</h1>
 
-    <div>
-    <textarea name="textarea" style="width:500px;height:300px;"></textarea>
-    </div>
+    <div id="terminal"></div>
+
 
     <div>
         <label for="hostname">Host name:</label>
@@ -17,10 +21,15 @@
         <input type="text" id="user" name="user" value="jcal0"><br><br>
         <label for="pwfield">Password:</label>
         <input type="text" id="pwfield" name="pwfield" value="ZVTKoZ9HfPRQ"><br><br>
+        <label for="customInput">Custom Input</label>
+        <input type="text" id="customInput" name="customInput"><br><br>
+        <label for="customInput_noenter">Custom Input No Enter</label>
+        <input type="text" id="customInput_noenter" name="customInput_noenter"><br><br>
     </div>
     <button id="myConnectButton">Connect</button>
     <button id="sendBackspace">Send backspace</button>
-    <button id="Send Enter">Send backspace</button>
+    <button id="sendEnter">Send Enter</button>
+    <button id="sendnoEnter">Send Enter</button>
     <button id="Close">Close</button>
 
     <ul id="myList">
@@ -29,23 +38,47 @@
 
 
     <script>
-        let url = `ws://${window.location.host}/ws/socket-server/`
+        let url = `ws://moldyspam.com/ws/socket-server/`
         const ulElement = document.getElementById('myList');
         const chatSocket = new WebSocket(url)
+
+        let myEvent = new Event('myCustomEvent');
+
+        var term = new Terminal();
+        term.open(document.getElementById('terminal'));
+        
+        function stripAnsi(text) {
+            // This regular expression matches and removes ANSI escape sequences
+            return text.replace(/\u001b\[.*?m/g, '');
+        }
+
+        // Attach an event listener to the document
+        document.addEventListener('myEventName', function(e) {
+            const adjustedDetail = e.detail.replace(/\n/g, '\r\n');
+            term.write(adjustedDetail);
+
+        });
+    
         chatSocket.onmessage = function(e){
             let data = JSON.parse(e.data)
             console.log('Data:', data)
-            const liElement = document.createElement('li');
-            liElement.textContent = data.listdata
-            ulElement.appendChild(liElement);
+
+            if (data.type === 'term') {
+                let message = data.message;
+                let myEvent = new CustomEvent('myEventName', { detail: message });
+                document.dispatchEvent(myEvent);
+            }
+
         }
 
         function connectFunction() {
+            const host = document.getElementById('hostname').value;
             const username = document.getElementById('user').value;
             const password = document.getElementById('pwfield').value;
 
             const eventData = {
                 event: 'connect_ssh',
+                host: host,
                 username: username,
                 password: password
             };
@@ -56,9 +89,75 @@
             // i want to send an event here
           }
 
-        var button = document.getElementById("myConnectButton");
 
-        button.onclick = connectFunction;
+        
+        let myConnectButton = document.getElementById('myConnectButton');
+
+        myConnectButton.addEventListener('click', function() {
+            console.log('Connect button was clicked!');
+            connectFunction();
+
+        });
+
+
+        function sendEnterFunction(customInput) {
+
+           
+
+            const eventData = {
+                event: 'command',
+                input: customInput
+            };
+        
+
+            chatSocket.send(JSON.stringify(eventData));
+
+            // i want to send an event here
+          }
+
+
+        let sendEnterButton = document.getElementById('sendEnter');
+
+        sendEnterButton.addEventListener('click', function() {
+
+            const customInput = document.getElementById('customInput').value;
+
+            console.log('Send Enter button was clicked! also the custom input is ' + customInput);
+
+            term.write(customInput + '\r\n');
+            sendEnterFunction(customInput);
+
+        });
+
+        function sendNoEnterFunction(customInput) {
+
+           
+
+            const eventData = {
+                event: 'command_noenter',
+                input: customInput
+            };
+        
+
+            chatSocket.send(JSON.stringify(eventData));
+
+            // i want to send an event here
+          }
+
+
+        let sendNoEnter = document.getElementById('sendnoEnter');
+        sendNoEnter.addEventListener('click', function() {
+
+            const customInput = document.getElementById('customInput_noenter').value;
+
+            console.log('Send Enter button was clicked! also the custom input is ' + customInput);
+
+            term.write(customInput);
+            sendNoEnterFunction(customInput);
+
+        });
+
+
 
     </script>
 </body>
