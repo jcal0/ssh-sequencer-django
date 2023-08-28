@@ -27,7 +27,8 @@ DEBUG = True
 
 DEBUGGER_ENABLE = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.appspot.com', 'localhost', 'moldyspam.com']
+
 
 
 # Application definition
@@ -131,3 +132,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

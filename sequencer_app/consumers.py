@@ -17,8 +17,11 @@ class SSH_connection_object:
         self.conn = None
         
     async def connect(self):
-        self.conn = await asyncssh.connect(self.host, username=self.username, password=self.password)
-        self.writer, self.reader, self.errout = await self.conn.open_session()
+        try:
+            self.conn = await asyncssh.connect(self.host, username=self.username, password=self.password, known_hosts=None)
+            self.writer, self.reader, self.errout = await self.conn.open_session()
+        except: 
+            self.conn = None
 
     async def disconnect(self):
         if self.conn is not None:
@@ -27,6 +30,9 @@ class SSH_connection_object:
             
     async def send_command(self, command):
         self.writer.write(command + '\n')
+        
+    async def send_command_noenter(self, command):
+        self.writer.write(command)
         
     async def task1(self):
         stream = ''
@@ -46,8 +52,10 @@ class SSH_connection_object:
         # print(result)
         await asyncio.sleep(1)
         # stream += result
-            
-        return stream
+        
+        self.writer.write('moon\n')
+        
+        # return stream
             # writer.write(backspace)
             # result = await asyncio.wait_for(reader.readexactly(4096), timeout=3)
             # self.stream += result
@@ -137,13 +145,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
             password = data.get('password', '')
             self.ssh_conn_instance = SSH_connection_object(host, username, password)
             await self.ssh_conn_instance.connect()
-            asyncio.create_task(self.ssh_conn_instance.task1())
-            self.keep_reading_task = asyncio.create_task(self.keep_reading())
-            
+            if self.ssh_conn_instance.conn is None:
+                await self.send(text_data=json.dumps({
+                        'type':'term',
+                        'message': 'Connection denied'
+                    }))
+            else:  
+                asyncio.create_task(self.ssh_conn_instance.task1())
+                self.keep_reading_task = asyncio.create_task(self.keep_reading())
+                
             
         if event == 'command':
             input = data.get('input', '')
             await self.ssh_conn_instance.send_command(input)
+
+        if event == 'command_noenter':
+            input = data.get('input', '')
+            await self.ssh_conn_instance.send_command_noenter(input)
 
         
         if message == 'infinite':
@@ -189,9 +207,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         'type':'term',
                         'message':result
                     }))
-                await asyncio.sleep(0.2)
-                # result = await asyncio.wait_for(self.ssh_conn_instance.reader.read(4096), timeout=3)
+            await asyncio.sleep(0.05)    # result = await asyncio.wait_for(self.ssh_conn_instance.reader.read(4096), timeout=3)
         pass
 
     async def disconnect(self, close_code):
+
         await self.ssh_conn_instance.disconnect()
